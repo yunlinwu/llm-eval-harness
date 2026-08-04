@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven POM (Project Object Model) — this file tells Maven what our project is,
+  what libraries it depends on, and how to build it. It is the Java/Spring
+  equivalent of package.json + a build script rolled into one.
+
+  The 20/80 lens: you almost never edit this file day-to-day. You add a
+  dependency block when you need a new library, and you upgrade the Spring Boot
+  version once every few months. The rest of it is boilerplate you can copy
+  from any Spring Initializr project.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Inheriting from spring-boot-starter-parent gives us a curated set of
+      dependency versions that are all tested to work together. Without this,
+      picking compatible versions of Spring + Jackson + Hibernate + H2 + JUnit
+      is a rabbit hole. This is a huge slice of the 20/80.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.yunlinwu</groupId>
+    <artifactId>llm-eval-harness</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>llm-eval-harness</name>
+    <description>A tiny Spring Boot service for defining and running LLM evaluations.</description>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <!--
+          spring-boot-starter-web pulls in: an embedded Tomcat server, Spring MVC
+          (so @RestController works), and Jackson (JSON marshalling). One line,
+          three big libraries wired together.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+          spring-boot-starter-data-jpa pulls in: Hibernate (the JPA
+          implementation), Spring Data JPA (so JpaRepository works), and a JDBC
+          connection pool. This is the whole "put annotations on a class and get
+          a working database table" magic.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+          H2 is a Java-in-process database — starts instantly, runs in memory,
+          zero setup. Perfect for learning + tests. In production you'd swap for
+          Postgres or MySQL; the code stays the same because of JPA.
+        -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+          spring-boot-starter-test pulls in: JUnit 5, Mockito, AssertJ, and
+          MockMvc (for testing @RestController without spinning up a real HTTP
+          server). This is the whole test toolbox in one line.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              This plugin lets us do `mvn spring-boot:run` to launch the app
+              locally and packages a runnable JAR when we do `mvn package`.
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
