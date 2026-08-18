@@ -72,6 +72,18 @@
         </dependency>
 
         <!--
+          The official Anthropic Java SDK — how we call Claude. It reads your
+          ANTHROPIC_API_KEY from the environment, so the key never appears in
+          code or config. (Jackson, for parsing/serializing JSON, already comes
+          in via spring-boot-starter-web — no separate dependency needed.)
+        -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>2.34.0</version>
+        </dependency>
+
+        <!--
           spring-boot-starter-test pulls in: JUnit 5, Mockito, AssertJ, and
           MockMvc (for testing @RestController without spinning up a real HTTP
           server). This is the whole test toolbox in one line.
