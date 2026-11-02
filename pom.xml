@@ -61,14 +61,26 @@
         </dependency>
 
         <!--
+          The PostgreSQL JDBC driver — how Java talks to the Postgres server
+          running in Docker (see docker-compose.yml). `runtime` scope: our code
+          never imports it directly; JPA/Hibernate loads it from the JDBC URL.
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
           H2 is a Java-in-process database — starts instantly, runs in memory,
-          zero setup. Perfect for learning + tests. In production you'd swap for
-          Postgres or MySQL; the code stays the same because of JPA.
+          zero setup. Now `test` scope only: the app runs on Postgres, but tests
+          stay on H2 so `mvn test` never needs Docker. Same entities, same code,
+          different database — that's what JPA buys you.
         -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
 
         <!--

@@ -99,8 +99,15 @@ pattern and why it exists.
 
 ## Run it locally
 
-Prereqs: **Java 17+** and **Maven** installed. (On macOS:
-`brew install openjdk@17 maven`.)
+Prereqs: **Java 17+**, **Maven**, and **Docker Desktop**. (On macOS:
+`brew install openjdk@17 maven`; Docker Desktop from docker.com.)
+
+Start Postgres first (defined in `docker-compose.yml`; data lives in a named
+volume, so it survives restarts):
+
+```bash
+docker compose up -d
+```
 
 Running an eval calls the Claude API, so set your key first (the SDK reads it
 from the environment — it never goes in code or config):
@@ -110,9 +117,9 @@ export ANTHROPIC_API_KEY=sk-ant-...
 mvn spring-boot:run
 ```
 
-App starts on `http://localhost:8080`. Default model is `claude-opus-5`; point
-`anthropic.model` in `application.properties` at `claude-haiku-4-5` for cheap,
-fast runs while you iterate.
+App starts on `http://localhost:8080`. The model under test is
+`anthropic.model` in `application.properties` (currently `claude-haiku-5-5`,
+cheap and fast while iterating).
 
 Full loop — define an eval, then run it:
 
@@ -136,9 +143,17 @@ curl -X POST http://localhost:8080/evals/1/runs
 curl http://localhost:8080/runs/1
 ```
 
-Poke the DB directly at `http://localhost:8080/h2-console` (JDBC URL:
-`jdbc:h2:mem:evals`, user: `sa`, no password) — you'll see `EVAL` and `EVAL_RUN`
-tables now.
+Poke the DB directly with `psql` inside the container:
+
+```bash
+docker compose exec postgres psql -U evals -d evals
+# evals=# \dt                 list tables (eval, eval_run)
+# evals=# SELECT * FROM eval;  see your rows
+# evals=# \q                  quit
+```
+
+Stop Postgres with `docker compose down` (data kept) or `docker compose down -v`
+(data wiped).
 
 ## Run the tests
 
@@ -146,16 +161,20 @@ tables now.
 mvn test
 ```
 
-The tests need **no API key** — the scorer is tested as a pure function and the
+The tests need **no API key and no Docker** — `@AutoConfigureTestDatabase`
+swaps Postgres for in-memory H2 in the integration test, the scorer is tested as a pure function and the
 web tests only exercise CRUD. The LLM call is left for manual runs on purpose:
 you don't want a test suite spending tokens or depending on the network.
 
 ## Roadmap
 
 - **Evening 1:** Eval CRUD + H2 + one test.
-- **Evening 2 (this commit):** `ClaudeService` + `EvalRunnerService` +
+- **Evening 2:** `ClaudeService` + `EvalRunnerService` +
   `Scorer` + `EvalRun`; `POST /evals/{id}/runs` calls Claude per case and scores it.
-- **Evening 3:** More scorers (exact-match, LLM-as-judge); compare runs.
+- **Evening 3:** Mockito unit tests for `EvalRunnerService`.
+- **Evening 4:** PostgreSQL in Docker Compose replaces H2 for the app; tests
+  stay on H2.
+- **Next:** More scorers (exact-match, LLM-as-judge); compare runs.
 - **Evening 4+:** Second provider, run comparison, maybe an Angular frontend if
   it adds interview-story value.
 

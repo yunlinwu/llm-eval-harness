@@ -1,0 +1,29 @@
+# Local Postgres for development. Start it with:   docker compose up -d
+# Stop it (data is kept) with:                     docker compose down
+# Wipe the data too:                               docker compose down -v
+#
+# Docker Compose reads this file and runs each "service" as a container.
+# We only need one: a Postgres server. The Spring app itself still runs on
+# your Mac with `mvn spring-boot:run` and connects to it over localhost.
+
+services:
+  postgres:
+    # Official Postgres image, pinned to a major version so it doesn't change under you.
+    image: postgres:16
+    # On first start, the image creates this user, password, and database.
+    # Local-dev values only; a real deployment reads these from secrets.
+    environment:
+      POSTGRES_USER: evals
+      POSTGRES_PASSWORD: evals
+      POSTGRES_DB: evals
+    # "host:container" — Postgres listens on 5432 inside the container; this
+    # exposes it on localhost:5432 on your Mac so Spring can reach it.
+    ports:
+      - "5432:5432"
+    # A named volume: Postgres' data files live here, outside the container,
+    # so they survive `docker compose down` and container restarts.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
